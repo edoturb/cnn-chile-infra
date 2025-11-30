@@ -1,0 +1,17 @@
+# Archivos de Terraform
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+crash.log
+
+# Archivos de la evaluación (Contraseñas o información local)
+*.zip
+lambda_handler.zip # Archivo temporal
+
+# Clave SSH privada (si aplica)
+*.pem
+*.key
+
+# Directorios de IDE (ej. VS Code)
+.vscode/
