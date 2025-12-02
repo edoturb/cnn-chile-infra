@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error - CNN Chile</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .error-container {
+            text-align: center;
+            max-width: 600px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 40px;
+            backdrop-filter: blur(10px);
+        }
+        h1 {
+            color: #ff6b35;
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+        .error-code {
+            font-size: 1.5em;
+            margin-bottom: 30px;
+            opacity: 0.8;
+        }
+        .back-button {
+            background: #CC0000;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: transform 0.3s;
+        }
+        .back-button:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1>🏠 CNN Chile</h1>
+        <div class="error-code">Página No Encontrada</div>
+        <p>La página que estás buscando no existe o ha sido movida.</p>
+        <p>Te redirigimos a nuestra página principal.</p>
+        <br>
+        <a href="index.html" class="back-button">Ir a Inicio</a>
+    </div>
+    
+    <script>
+        // Auto-redirect a index.html después de 3 segundos
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 3000);
+    </script>
+</body>
+</html>

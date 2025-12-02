@@ -1,0 +1,169 @@
+# 🧪 Configuración de Artillery para Pruebas de Carga del Website
+# CNN Chile Infrastructure - Website Load Testing
+
+config:
+  target: 'https://dev.cnnchile.com'
+  phases:
+    # Warm up
+    - duration: 30
+      arrivalRate: 10
+      name: "Website warm up"
+    
+    # Normal traffic simulation
+    - duration: 180
+      arrivalRate: 10
+      rampTo: 100
+      name: "Normal traffic"
+    
+    # Peak traffic (breaking news scenario)
+    - duration: 120
+      arrivalRate: 100
+      rampTo: 500
+      name: "Breaking news peak"
+    
+    # Sustained high traffic
+    - duration: 300
+      arrivalRate: 300
+      name: "Sustained peak"
+    
+    # Cool down
+    - duration: 60
+      arrivalRate: 300
+      rampTo: 10
+      name: "Cool down"
+
+  defaults:
+    headers:
+      User-Agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'
+      Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+      Accept-Language: 'es-CL,es;q=0.9,en;q=0.8'
+      Accept-Encoding: 'gzip, deflate, br'
+      Cache-Control: 'no-cache'
+
+  # Plugins para métricas de frontend
+  plugins:
+    expect: {}
+    metrics-by-endpoint:
+      useOnlyRequestNames: true
+
+scenarios:
+  # Navegación típica de usuario
+  - name: "Regular User Navigation"
+    weight: 60
+    flow:
+      # Página principal
+      - get:
+          url: "/"
+          expect:
+            - statusCode: 200
+            - contentType: html
+
+      # Sección de noticias
+      - think: 2
+      - get:
+          url: "/noticias"
+          expect:
+            - statusCode: 200
+
+      # Artículo específico
+      - think: 1
+      - get:
+          url: "/noticias/politica/{{ $randomInt(1, 100) }}"
+          expect:
+            - statusCode: [200, 404] # 404 is acceptable for random articles
+
+      # Búsqueda
+      - think: 3
+      - get:
+          url: "/buscar?q=chile"
+          expect:
+            - statusCode: 200
+
+  # Usuario móvil
+  - name: "Mobile User"
+    weight: 40
+    flow:
+      - get:
+          url: "/"
+          headers:
+            User-Agent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15'
+          expect:
+            - statusCode: 200
+
+      # Menú móvil
+      - get:
+          url: "/deportes"
+          headers:
+            User-Agent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebKit/605.1.15'
+          expect:
+            - statusCode: 200
+
+      # Video en móvil
+      - get:
+          url: "/videos"
+          headers:
+            User-Agent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_6 like Mac OS X) AppleWebFile/605.1.15'
+          expect:
+            - statusCode: 200
+
+  # Assets estáticos (CDN)
+  - name: "Static Assets"
+    weight: 30
+    flow:
+      # CSS
+      - get:
+          url: "/assets/css/main.css"
+          expect:
+            - statusCode: 200
+            - header: "content-type"
+              value: "text/css"
+
+      # JavaScript
+      - get:
+          url: "/assets/js/app.js"
+          expect:
+            - statusCode: 200
+
+      # Imágenes
+      - get:
+          url: "/assets/images/logo.png"
+          expect:
+            - statusCode: 200
+
+  # Live streaming pages
+  - name: "Live Content"
+    weight: 20
+    flow:
+      # Página de transmisión en vivo
+      - get:
+          url: "/en-vivo"
+          expect:
+            - statusCode: 200
+
+      # API de stream status
+      - get:
+          url: "/api/v1/streaming/status"
+          expect:
+            - statusCode: 200
+
+  # Suscripciones y contenido premium
+  - name: "Premium Content Access"
+    weight: 10
+    flow:
+      # Página de suscripción
+      - get:
+          url: "/suscripcion"
+          expect:
+            - statusCode: 200
+
+      # Login form
+      - get:
+          url: "/login"
+          expect:
+            - statusCode: 200
+
+      # Premium content preview
+      - get:
+          url: "/premium"
+          expect:
+            - statusCode: [200, 302] # 302 redirect to login is acceptable

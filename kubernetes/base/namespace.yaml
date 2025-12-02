@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cnn-chile
+  labels:
+    name: cnn-chile
+    environment: production
+    project: cnn-chile-infra
+    managed-by: terraform
+  annotations:
+    description: "CNN Chile main application namespace"
+    contact: "devops@cnnchile.com"

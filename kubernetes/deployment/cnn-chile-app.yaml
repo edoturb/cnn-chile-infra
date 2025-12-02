@@ -1,0 +1,98 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: cnn-chile
+  labels:
+    name: cnn-chile
+    environment: dev
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cnn-chile-web
+  namespace: cnn-chile
+  labels:
+    app: cnn-chile-web
+    component: frontend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: cnn-chile-web
+  template:
+    metadata:
+      labels:
+        app: cnn-chile-web
+        component: frontend
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.24-alpine
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "50m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
+        volumeMounts:
+        - name: web-content
+          mountPath: /usr/share/nginx/html
+        - name: nginx-config
+          mountPath: /etc/nginx/conf.d
+      volumes:
+      - name: web-content
+        configMap:
+          name: cnn-chile-web-content
+      - name: nginx-config
+        configMap:
+          name: nginx-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cnn-chile-web-service
+  namespace: cnn-chile
+  labels:
+    app: cnn-chile-web
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+  selector:
+    app: cnn-chile-web
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: cnn-chile-ingress
+  namespace: cnn-chile
+  annotations:
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+    alb.ingress.kubernetes.io/group.name: cnn-chile-alb
+    alb.ingress.kubernetes.io/load-balancer-name: cnn-chile-k8s-alb
+spec:
+  rules:
+  - host: dev.cnnchile.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ssl-redirect
+            port:
+              name: use-annotation
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: cnn-chile-web-service
+            port:
+              number: 80

@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CNN Chile - Noticias e Información</title>
+    <meta name="description" content="CNN Chile - Las últimas noticias de Chile y el mundo. Información, análisis y entretenimiento.">
+    <meta name="keywords" content="noticias, chile, cnn, información, política, economía, deportes">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Meta datos Open Graph -->
+    <meta property="og:title" content="CNN Chile - Noticias e Información">
+    <meta property="og:description" content="Las últimas noticias de Chile y el mundo">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://cnn-chile-dev-static-content-2854546c.s3.amazonaws.com">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="assets/favicon.ico">
+</head>
+<body>
+    <!-- Header y Navegación -->
+    <header id="main-header">
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-brand">
+                    <img src="assets/cnn-chile-logo.svg" alt="CNN Chile" class="logo">
+                </div>
+                
+                <div class="nav-menu" id="nav-menu">
+                    <ul class="nav-list">
+                        <li><a href="#inicio" class="nav-link active">Inicio</a></li>
+                        <li><a href="#noticias" class="nav-link">Noticias</a></li>
+                        <li><a href="#politica" class="nav-link">Política</a></li>
+                        <li><a href="#economia" class="nav-link">Economía</a></li>
+                        <li><a href="#deportes" class="nav-link">Deportes</a></li>
+                        <li><a href="#streaming" class="nav-link">TV en Vivo</a></li>
+                    </ul>
+                </div>
+                
+                <div class="nav-actions">
+                    <button class="search-btn" aria-label="Buscar">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <button class="user-btn" onclick="toggleUserMenu()" aria-label="Usuario">
+                        <i class="fas fa-user"></i>
+                    </button>
+                    <button class="menu-toggle" id="menu-toggle" aria-label="Menú">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+        
+        <!-- Barra de noticias destacadas -->
+        <div class="breaking-news">
+            <div class="breaking-container">
+                <span class="breaking-label">ÚLTIMA HORA</span>
+                <div class="breaking-content" id="breaking-news">
+                    <span>Infraestructura AWS CNN Chile desplegada exitosamente • 77 recursos operativos • Sistema en línea</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="hero" class="hero-section">
+        <div class="hero-container">
+            <div class="hero-content">
+                <div class="hero-main">
+                    <article class="featured-story">
+                        <img src="assets/hero-image.jpg" alt="Noticia principal" class="hero-image">
+                        <div class="hero-text">
+                            <span class="hero-category">TECNOLOGÍA</span>
+                            <h1>CNN Chile lanza nueva plataforma digital con infraestructura en la nube</h1>
+                            <p>La nueva infraestructura AWS permite escalabilidad global y disponibilidad 24/7 para todas las plataformas digitales.</p>
+                            <div class="hero-meta">
+                                <span class="author">Por Redacción CNN Chile</span>
+                                <span class="date">1 de diciembre, 2025</span>
+                            </div>
+                        </div>
+                    </article>
+                </div>
+                
+                <div class="hero-sidebar">
+                    <h3>Más Noticias</h3>
+                    <div class="sidebar-stories" id="sidebar-stories">
+                        <!-- Se cargarán dinámicamente -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Streaming en Vivo -->
+    <section id="live-streaming" class="streaming-section">
+        <div class="container">
+            <div class="section-header">
+                <h2><i class="fas fa-broadcast-tower"></i> CNN Chile en Vivo</h2>
+                <p>Transmisión 24/7 de noticias y análisis</p>
+            </div>
+            
+            <div class="streaming-container">
+                <div class="video-player">
+                    <div class="video-placeholder">
+                        <i class="fas fa-play-circle"></i>
+                        <h3>Señal en Vivo</h3>
+                        <p>Haz clic para ver CNN Chile en vivo</p>
+                        <button class="play-btn" onclick="initLiveStream()">
+                            <i class="fas fa-play"></i> Ver Ahora
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="streaming-info">
+                    <h4>Ahora en CNN Chile</h4>
+                    <div class="current-program">
+                        <h5>CNN Chile Noticias</h5>
+                        <p>Análisis de las principales noticias del día con nuestro equipo de periodistas.</p>
+                    </div>
+                    
+                    <div class="program-schedule">
+                        <h6>Próximos Programas</h6>
+                        <ul>
+                            <li><strong>20:00</strong> - CNN Chile Prime</li>
+                            <li><strong>21:00</strong> - Deportes CNN</li>
+                            <li><strong>22:00</strong> - Análisis Internacional</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Noticias -->
+    <section id="news-section" class="news-grid-section">
+        <div class="container">
+            <div class="section-header">
+                <h2>Últimas Noticias</h2>
+                <div class="news-categories">
+                    <button class="category-btn active" data-category="all">Todas</button>
+                    <button class="category-btn" data-category="politica">Política</button>
+                    <button class="category-btn" data-category="economia">Economía</button>
+                    <button class="category-btn" data-category="deportes">Deportes</button>
+                    <button class="category-btn" data-category="internacional">Internacional</button>
+                </div>
+            </div>
+            
+            <div class="news-grid" id="news-grid">
+                <!-- Las noticias se cargarán dinámicamente desde DynamoDB -->
+            </div>
+            
+            <div class="load-more-container">
+                <button class="load-more-btn" onclick="loadMoreNews()">
+                    <i class="fas fa-plus"></i> Cargar Más Noticias
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sección de Analytics/Estadísticas -->
+    <section id="analytics" class="analytics-section">
+        <div class="container">
+            <div class="section-header">
+                <h2><i class="fas fa-chart-line"></i> Estadísticas en Tiempo Real</h2>
+            </div>
+            
+            <div class="analytics-grid">
+                <div class="analytics-card">
+                    <div class="analytics-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="analytics-data">
+                        <h3 id="users-online">Loading...</h3>
+                        <p>Usuarios Online</p>
+                    </div>
+                </div>
+                
+                <div class="analytics-card">
+                    <div class="analytics-icon">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div class="analytics-data">
+                        <h3 id="page-views">Loading...</h3>
+                        <p>Vistas de Página</p>
+                    </div>
+                </div>
+                
+                <div class="analytics-card">
+                    <div class="analytics-icon">
+                        <i class="fas fa-newspaper"></i>
+                    </div>
+                    <div class="analytics-data">
+                        <h3 id="total-articles">Loading...</h3>
+                        <p>Artículos Publicados</p>
+                    </div>
+                </div>
+                
+                <div class="analytics-card">
+                    <div class="analytics-icon">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <div class="analytics-data">
+                        <h3 id="streaming-viewers">Loading...</h3>
+                        <p>Viendo TV en Vivo</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="main-footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>CNN Chile</h4>
+                    <p>Noticias e información las 24 horas del día</p>
+                    <div class="social-links">
+                        <a href="#" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                        <a href="#" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Secciones</h4>
+                    <ul>
+                        <li><a href="#noticias">Noticias</a></li>
+                        <li><a href="#politica">Política</a></li>
+                        <li><a href="#economia">Economía</a></li>
+                        <li><a href="#deportes">Deportes</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Servicios</h4>
+                    <ul>
+                        <li><a href="#streaming">TV en Vivo</a></li>
+                        <li><a href="#newsletter">Newsletter</a></li>
+                        <li><a href="#mobile">App Móvil</a></li>
+                        <li><a href="#rss">RSS</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Infraestructura</h4>
+                    <ul>
+                        <li><span>AWS Account: 220017832616</span></li>
+                        <li><span>Region: us-east-1</span></li>
+                        <li><span>VPC: vpc-025aea4b75e561b62</span></li>
+                        <li><span>Estado: <span class="status-active">✅ Operativo</span></span></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 CNN Chile. Todos los derechos reservados.</p>
+                <p>Powered by AWS Infrastructure - 77 recursos desplegados</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modal de Usuario -->
+    <div id="user-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeUserModal()">&times;</span>
+            <h2>Acceso de Usuario</h2>
+            
+            <div class="auth-tabs">
+                <button class="tab-btn active" onclick="showLogin()">Iniciar Sesión</button>
+                <button class="tab-btn" onclick="showRegister()">Registrarse</button>
+            </div>
+            
+            <form id="login-form" class="auth-form">
+                <input type="email" placeholder="Email" required>
+                <input type="password" placeholder="Contraseña" required>
+                <button type="submit">Iniciar Sesión</button>
+            </form>
+            
+            <form id="register-form" class="auth-form hidden">
+                <input type="text" placeholder="Nombre completo" required>
+                <input type="email" placeholder="Email" required>
+                <input type="password" placeholder="Contraseña" required>
+                <button type="submit">Registrarse</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="js/config.js"></script>
+    <script src="js/aws-integration.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/analytics.js"></script>
+    <script src="js/streaming.js"></script>
+    
+    <!-- Inicialización -->
+    <script>
+        // Inicializar aplicación cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 CNN Chile - Inicializando aplicación...');
+            
+            // Inicializar componentes
+            initApp();
+            loadLatestNews();
+            startAnalyticsUpdate();
+            initBreakingNews();
+            
+            console.log('✅ CNN Chile - Aplicación inicializada');
+        });
+    </script>
+</body>
+</html>

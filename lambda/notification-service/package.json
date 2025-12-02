@@ -1,0 +1,19 @@
+{
+  "name": "cnn-chile-notification-service",
+  "version": "1.0.0",
+  "description": "Notification service for CNN Chile platform",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1490.0"
+  },
+  "keywords": [
+    "lambda",
+    "notification",
+    "cnn-chile"
+  ],
+  "author": "CNN Chile Dev Team",
+  "license": "MIT"
+}

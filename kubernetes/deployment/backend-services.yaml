@@ -1,0 +1,173 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cnn-chile-api
+  namespace: cnn-chile
+  labels:
+    app: cnn-chile-api
+    component: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cnn-chile-api
+  template:
+    metadata:
+      labels:
+        app: cnn-chile-api
+        component: backend
+    spec:
+      containers:
+      - name: api
+        image: node:18-alpine
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "3000"
+        - name: AWS_REGION
+          value: "us-east-1"
+        - name: DYNAMODB_TABLE_PREFIX
+          value: "cnn-chile-dev"
+        - name: REDIS_ENDPOINT
+          valueFrom:
+            secretKeyRef:
+              name: redis-credentials
+              key: endpoint
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: host
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: password
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "200m"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        workingDir: /app
+        command: ["/bin/sh"]
+        args: ["-c", "npm install express && node server.js"]
+        volumeMounts:
+        - name: api-code
+          mountPath: /app
+      volumes:
+      - name: api-code
+        configMap:
+          name: cnn-chile-api-code
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cnn-chile-api-service
+  namespace: cnn-chile
+  labels:
+    app: cnn-chile-api
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3000
+    targetPort: 3000
+    protocol: TCP
+  selector:
+    app: cnn-chile-api
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cnn-chile-streaming
+  namespace: cnn-chile
+  labels:
+    app: cnn-chile-streaming
+    component: streaming
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cnn-chile-streaming
+  template:
+    metadata:
+      labels:
+        app: cnn-chile-streaming
+        component: streaming
+    spec:
+      containers:
+      - name: streaming
+        image: node:18-alpine
+        ports:
+        - containerPort: 8080
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "8080"
+        - name: MEDIASTORE_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: streaming-config
+              key: mediastore_endpoint
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "200m"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 30
+        workingDir: /app
+        command: ["/bin/sh"]
+        args: ["-c", "npm install express socket.io && node streaming-server.js"]
+        volumeMounts:
+        - name: streaming-code
+          mountPath: /app
+      volumes:
+      - name: streaming-code
+        configMap:
+          name: cnn-chile-streaming-code
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cnn-chile-streaming-service
+  namespace: cnn-chile
+  labels:
+    app: cnn-chile-streaming
+spec:
+  type: ClusterIP
+  ports:
+  - port: 8080
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    app: cnn-chile-streaming

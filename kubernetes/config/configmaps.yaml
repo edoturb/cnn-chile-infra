@@ -1,0 +1,140 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-config
+  namespace: cnn-chile
+data:
+  default.conf: |
+    server {
+        listen       80;
+        server_name  localhost;
+        
+        location / {
+            root   /usr/share/nginx/html;
+            index  index.html index.htm;
+            try_files $uri $uri/ /index.html;
+        }
+        
+        location /api/ {
+            proxy_pass http://cnn-chile-api-service:3000/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+        
+        location /streaming/ {
+            proxy_pass http://cnn-chile-streaming-service:8080/;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection "upgrade";
+        }
+        
+        # Gzip compression
+        gzip on;
+        gzip_vary on;
+        gzip_min_length 1024;
+        gzip_proxied any;
+        gzip_comp_level 6;
+        gzip_types
+            text/plain
+            text/css
+            text/xml
+            text/javascript
+            application/json
+            application/javascript
+            application/xml+rss
+            application/atom+xml
+            image/svg+xml;
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cnn-chile-web-content
+  namespace: cnn-chile
+data:
+  # Aquí se incluirá el contenido de la aplicación web
+  # Por ahora usaremos un placeholder que se reemplazará con los archivos S3
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>CNN Chile - Kubernetes Deployment</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 0;
+                padding: 0;
+                background-color: #f5f5f5;
+            }
+            .container {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: 20px;
+            }
+            .header {
+                background-color: #cc0000;
+                color: white;
+                text-align: center;
+                padding: 20px 0;
+            }
+            .content {
+                background-color: white;
+                padding: 40px;
+                margin-top: 20px;
+                border-radius: 8px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .status {
+                background-color: #28a745;
+                color: white;
+                padding: 15px;
+                border-radius: 5px;
+                margin: 20px 0;
+                text-align: center;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>🎯 CNN Chile en Kubernetes</h1>
+            <p>Aplicación desplegada exitosamente en EKS</p>
+        </div>
+        
+        <div class="container">
+            <div class="content">
+                <h2>🚀 Estado del Despliegue</h2>
+                <div class="status">
+                    ✅ Aplicación ejecutándose en EKS Cluster
+                </div>
+                
+                <h3>📋 Información del Sistema</h3>
+                <ul>
+                    <li><strong>Plataforma:</strong> Amazon EKS (Kubernetes)</li>
+                    <li><strong>Replicas:</strong> 3 pods activos</li>
+                    <li><strong>Load Balancer:</strong> AWS ALB Ingress</li>
+                    <li><strong>Estado:</strong> Operacional</li>
+                </ul>
+                
+                <h3>🔗 Próximos Pasos</h3>
+                <p>Para completar la migración, sincronizar el contenido desde S3:</p>
+                <pre><code>kubectl create configmap cnn-chile-web-content --from-file=deployment/web/ -n cnn-chile --dry-run=client -o yaml | kubectl apply -f -</code></pre>
+                
+                <p><em>Versión: Kubernetes ${KUBERNETES_VERSION} | Timestamp: ${TIMESTAMP}</em></p>
+            </div>
+        </div>
+        
+        <script>
+            // Reemplazar variables dinámicas
+            document.body.innerHTML = document.body.innerHTML
+                .replace('${KUBERNETES_VERSION}', '1.28')
+                .replace('${TIMESTAMP}', new Date().toLocaleString('es-CL'));
+        </script>
+    </body>
+    </html>

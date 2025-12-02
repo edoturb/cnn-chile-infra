@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CNN Chile - Infraestructura Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container {
+            max-width: 800px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+        h1 {
+            color: #ff6b35;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+        .status-card {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            padding: 20px;
+            border-left: 5px solid #4CAF50;
+        }
+        .status-card.warning {
+            border-left-color: #ff9800;
+        }
+        .status-card h3 {
+            margin: 0 0 10px 0;
+            color: #4CAF50;
+        }
+        .status-card.warning h3 {
+            color: #ff9800;
+        }
+        .endpoint {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 5px 0;
+            font-family: monospace;
+            font-size: 0.9em;
+        }
+        .footer {
+            margin-top: 40px;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 CNN Chile Infrastructure</h1>
+        <p><strong>Estado:</strong> Infraestructura desplegada y operativa</p>
+        <p><strong>Fecha:</strong> 1 de diciembre de 2025</p>
+        
+        <div class="status-grid">
+            <div class="status-card">
+                <h3>✅ Networking</h3>
+                <p>VPC multi-AZ</p>
+                <p>3 subnets públicas</p>
+                <p>3 NAT gateways</p>
+            </div>
+            
+            <div class="status-card">
+                <h3>✅ Storage</h3>
+                <p>3 buckets S3 operativos</p>
+                <p>6 tablas DynamoDB</p>
+                <p>Versionado habilitado</p>
+            </div>
+            
+            <div class="status-card">
+                <h3>✅ Load Balancer</h3>
+                <p>ALB activo</p>
+                <div class="endpoint">cnn-chile-dev-alb-1352075639.us-east-1.elb.amazonaws.com</div>
+            </div>
+            
+            <div class="status-card warning">
+                <h3>🔄 ElastiCache</h3>
+                <p>Redis creándose</p>
+                <p>Multi-AZ configurado</p>
+                <p>Encriptación habilitada</p>
+            </div>
+            
+            <div class="status-card">
+                <h3>✅ Security</h3>
+                <p>WAF configurado</p>
+                <p>Certificados SSL</p>
+                <p>Security Groups</p>
+            </div>
+            
+            <div class="status-card">
+                <h3>✅ Messaging</h3>
+                <p>SNS Topics</p>
+                <p>SQS Queues</p>
+                <p>DLQ configurado</p>
+            </div>
+        </div>
+        
+        <h2>🔗 Recursos Disponibles</h2>
+        
+        <div class="status-card">
+            <h3>S3 Buckets</h3>
+            <div class="endpoint">cnn-chile-dev-static-content-2854546c</div>
+            <div class="endpoint">cnn-chile-dev-live-streaming-2854546c</div>
+            <div class="endpoint">cnn-chile-dev-media-content-2854546c</div>
+        </div>
+        
+        <div class="status-card">
+            <h3>DynamoDB Tables</h3>
+            <div class="endpoint">cnn-chile-dev-users</div>
+            <div class="endpoint">cnn-chile-dev-content</div>
+            <div class="endpoint">cnn-chile-dev-sessions</div>
+            <div class="endpoint">cnn-chile-dev-analytics</div>
+            <div class="endpoint">cnn-chile-dev-subscriptions</div>
+            <div class="endpoint">cnn-chile-dev-media-assets</div>
+        </div>
+        
+        <div class="footer">
+            <p>📊 Infraestructura: 77/125 recursos (61.6% completado)</p>
+            <p>💰 Costo estimado: ~$73/mes</p>
+            <p>🏗️ Desplegado con Terraform en AWS us-east-1</p>
+        </div>
+    </div>
+    
+    <script>
+        // Mostrar información del navegador
+        console.log('🚀 CNN Chile Infrastructure Demo');
+        console.log('VPC ID: vpc-025aea4b75e561b62');
+        console.log('Region: us-east-1');
+        console.log('Environment: dev');
+        
+        // Test básico de conectividad
+        fetch('https://httpbin.org/get')
+            .then(response => response.json())
+            .then(data => console.log('✅ Internet connectivity OK'))
+            .catch(error => console.log('❌ No internet connectivity'));
+    </script>
+</body>
+</html>

@@ -1,0 +1,175 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cnn-chile-api-code
+  namespace: cnn-chile
+data:
+  server.js: |
+    const express = require('express');
+    const app = express();
+    const port = process.env.PORT || 3000;
+
+    app.use(express.json());
+
+    // Health check endpoint
+    app.get('/health', (req, res) => {
+      res.json({ 
+        status: 'healthy', 
+        timestamp: new Date().toISOString(),
+        service: 'cnn-chile-api',
+        environment: process.env.NODE_ENV || 'development'
+      });
+    });
+
+    // API Routes
+    app.get('/api/news', (req, res) => {
+      res.json({
+        news: [
+          {
+            id: 1,
+            title: "CNN Chile en Kubernetes",
+            content: "La plataforma ahora está ejecutándose en EKS",
+            timestamp: new Date().toISOString(),
+            category: "tecnología"
+          },
+          {
+            id: 2,
+            title: "Infraestructura Modernizada",
+            content: "Migración exitosa a contenedores en AWS EKS",
+            timestamp: new Date().toISOString(),
+            category: "infraestructura"
+          }
+        ]
+      });
+    });
+
+    app.get('/api/analytics', (req, res) => {
+      res.json({
+        totalVisitors: Math.floor(Math.random() * 10000),
+        currentOnline: Math.floor(Math.random() * 100),
+        timestamp: new Date().toISOString(),
+        platform: 'EKS'
+      });
+    });
+
+    app.get('/api/users/profile', (req, res) => {
+      res.json({
+        user: {
+          id: 'eks-user-1',
+          name: 'Usuario EKS',
+          email: 'usuario@eks.example.com',
+          subscription: 'premium'
+        }
+      });
+    });
+
+    app.listen(port, () => {
+      console.log(`CNN Chile API running on port ${port} in EKS`);
+      console.log(`Health check available at /health`);
+    });
+
+  package.json: |
+    {
+      "name": "cnn-chile-api",
+      "version": "1.0.0",
+      "description": "CNN Chile API for EKS",
+      "main": "server.js",
+      "dependencies": {
+        "express": "^4.18.2"
+      },
+      "scripts": {
+        "start": "node server.js"
+      }
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cnn-chile-streaming-code
+  namespace: cnn-chile
+data:
+  streaming-server.js: |
+    const express = require('express');
+    const http = require('http');
+    const socketIo = require('socket.io');
+
+    const app = express();
+    const server = http.createServer(app);
+    const io = socketIo(server, {
+      cors: {
+        origin: "*",
+        methods: ["GET", "POST"]
+      }
+    });
+
+    const port = process.env.PORT || 8080;
+
+    // Health check endpoint
+    app.get('/health', (req, res) => {
+      res.json({ 
+        status: 'healthy', 
+        timestamp: new Date().toISOString(),
+        service: 'cnn-chile-streaming',
+        connections: io.sockets.sockets.size
+      });
+    });
+
+    // Streaming endpoints
+    app.get('/streaming/status', (req, res) => {
+      res.json({
+        status: 'live',
+        viewers: Math.floor(Math.random() * 1000),
+        quality: '1080p',
+        timestamp: new Date().toISOString()
+      });
+    });
+
+    // WebSocket connections
+    io.on('connection', (socket) => {
+      console.log('Usuario conectado al streaming:', socket.id);
+      
+      // Enviar datos de streaming simulados cada 5 segundos
+      const streamingInterval = setInterval(() => {
+        socket.emit('streaming-data', {
+          timestamp: new Date().toISOString(),
+          viewers: Math.floor(Math.random() * 1000),
+          quality: '1080p',
+          status: 'live'
+        });
+      }, 5000);
+
+      socket.on('disconnect', () => {
+        console.log('Usuario desconectado del streaming:', socket.id);
+        clearInterval(streamingInterval);
+      });
+    });
+
+    server.listen(port, () => {
+      console.log(`CNN Chile Streaming running on port ${port} in EKS`);
+      console.log(`Health check available at /health`);
+    });
+
+  package.json: |
+    {
+      "name": "cnn-chile-streaming",
+      "version": "1.0.0",
+      "description": "CNN Chile Streaming Service for EKS",
+      "main": "streaming-server.js",
+      "dependencies": {
+        "express": "^4.18.2",
+        "socket.io": "^4.7.2"
+      },
+      "scripts": {
+        "start": "node streaming-server.js"
+      }
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: streaming-config
+  namespace: cnn-chile
+data:
+  mediastore_endpoint: "https://example.data.mediastore.us-east-1.amazonaws.com/"
+  rtmp_url: "rtmp://example.com/live"
+  hls_url: "https://example.data.mediastore.us-east-1.amazonaws.com/live.m3u8"
