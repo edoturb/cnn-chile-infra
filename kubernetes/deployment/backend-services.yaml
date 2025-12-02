@@ -19,7 +19,7 @@ spec:
     spec:
       containers:
       - name: api
-        image: node:18-alpine
+        image: node:alpine
         ports:
         - containerPort: 3000
         env:
@@ -113,7 +113,7 @@ spec:
     spec:
       containers:
       - name: streaming
-        image: node:18-alpine
+        image: node:alpine
         ports:
         - containerPort: 8080
         env:
