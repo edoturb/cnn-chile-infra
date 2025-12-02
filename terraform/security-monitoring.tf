@@ -1,5 +1,6 @@
-# AWS WAF v2 for CloudFront Protection
+# AWS WAF v2 for CloudFront Protection (conditional)
 resource "aws_wafv2_web_acl" "cdn_waf" {
+  count = var.enable_advanced_waf ? 1 : 0
   name  = "${var.project_name}-cdn-waf"
   scope = "CLOUDFRONT"
 
@@ -12,8 +13,8 @@ resource "aws_wafv2_web_acl" "cdn_waf" {
     name     = "RateLimitRule"
     priority = 1
 
-    override_action {
-      none {}
+    action {
+      block {}
     }
 
     statement {
@@ -33,10 +34,6 @@ resource "aws_wafv2_web_acl" "cdn_waf" {
       cloudwatch_metrics_enabled = true
       metric_name                = "RateLimitRule"
       sampled_requests_enabled   = true
-    }
-
-    action {
-      block {}
     }
   }
 

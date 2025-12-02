@@ -119,3 +119,34 @@ variable "google_client_id" {
   default     = ""
   sensitive   = true
 }
+
+# Feature flags for quick deployment
+variable "enable_https" {
+  description = "Enable HTTPS and SSL certificate validation (requires manual DNS validation)"
+  type        = bool
+  default     = false
+}
+
+variable "enable_cloudfront" {
+  description = "Enable CloudFront distributions (requires validated SSL certificate)"
+  type        = bool
+  default     = false
+}
+
+variable "enable_mediastore" {
+  description = "Enable MediaStore for live streaming (requires IAM permissions)"
+  type        = bool
+  default     = false
+}
+
+variable "enable_lambda_edge" {
+  description = "Enable Lambda@Edge functions (requires CloudFront and IAM permissions)"
+  type        = bool
+  default     = false
+}
+
+variable "enable_advanced_waf" {
+  description = "Enable advanced WAF rules with geo-restrictions"
+  type        = bool
+  default     = false
+}

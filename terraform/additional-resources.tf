@@ -37,13 +37,14 @@ resource "aws_lb_target_group" "eks_api" {
   }
 }
 
-# ALB Listener
+# ALB HTTPS Listener (conditional)
 resource "aws_lb_listener" "main" {
+  count             = var.enable_https ? 1 : 0
   load_balancer_arn = aws_lb.main.arn
   port              = "443"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"
-  certificate_arn   = aws_acm_certificate.main.arn
+  certificate_arn   = aws_acm_certificate.main[0].arn
 
   default_action {
     type             = "forward"
@@ -51,25 +52,33 @@ resource "aws_lb_listener" "main" {
   }
 }
 
-# ALB HTTP Listener (redirect to HTTPS)
-resource "aws_lb_listener" "http_redirect" {
+# ALB HTTP Listener (redirect to HTTPS if enabled, otherwise forward directly)
+resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.main.arn
   port              = "80"
   protocol          = "HTTP"
 
   default_action {
-    type = "redirect"
+    type = var.enable_https ? "redirect" : "forward"
 
-    redirect {
-      port        = "443"
-      protocol    = "HTTPS"
-      status_code = "HTTP_301"
+    # Forward to target group if HTTPS is not enabled
+    target_group_arn = var.enable_https ? null : aws_lb_target_group.eks_api.arn
+
+    # Redirect to HTTPS if enabled
+    dynamic "redirect" {
+      for_each = var.enable_https ? [1] : []
+      content {
+        port        = "443"
+        protocol    = "HTTPS"
+        status_code = "HTTP_301"
+      }
     }
   }
 }
 
-# ACM Certificate for ALB
+# ACM Certificate for ALB (conditional)
 resource "aws_acm_certificate" "main" {
+  count             = var.enable_https ? 1 : 0
   domain_name       = "api.cnnchile.com"
   validation_method = "DNS"
 
@@ -87,9 +96,10 @@ resource "aws_acm_certificate" "main" {
   }
 }
 
-# IAM Role for MediaLive
+# IAM Role for MediaLive (conditional)
 resource "aws_iam_role" "media_live_role" {
-  name = "${var.project_name}-media-live-role"
+  count = var.enable_mediastore ? 1 : 0
+  name  = "${var.project_name}-media-live-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -110,16 +120,18 @@ resource "aws_iam_role" "media_live_role" {
 }
 
 resource "aws_iam_role_policy_attachment" "media_live_policy" {
+  count      = var.enable_mediastore ? 1 : 0
   policy_arn = "arn:aws:iam::aws:policy/service-role/MediaLiveAccessRole"
-  role       = aws_iam_role.media_live_role.name
+  role       = aws_iam_role.media_live_role[0].name
 }
 
-# Lambda@Edge Functions for CloudFront
+# Lambda@Edge Functions for CloudFront (conditional)
 resource "aws_lambda_function" "geo_restriction_edge" {
+  count         = var.enable_lambda_edge ? 1 : 0
   provider      = aws.us_east_1
   filename      = data.archive_file.geo_restriction_edge_zip.output_path
   function_name = "${var.project_name}-geo-restriction-edge"
-  role          = aws_iam_role.lambda_edge_execution_role.arn
+  role          = aws_iam_role.lambda_edge_execution_role[0].arn
   handler       = "index.handler"
   runtime       = "nodejs18.x"
   timeout       = 5
@@ -133,10 +145,11 @@ resource "aws_lambda_function" "geo_restriction_edge" {
 }
 
 resource "aws_lambda_function" "auth_edge" {
+  count         = var.enable_lambda_edge ? 1 : 0
   provider      = aws.us_east_1
   filename      = data.archive_file.auth_edge_zip.output_path
   function_name = "${var.project_name}-auth-edge"
-  role          = aws_iam_role.lambda_edge_execution_role.arn
+  role          = aws_iam_role.lambda_edge_execution_role[0].arn
   handler       = "index.handler"
   runtime       = "nodejs18.x"
   timeout       = 5
@@ -150,10 +163,11 @@ resource "aws_lambda_function" "auth_edge" {
 }
 
 resource "aws_lambda_function" "security_headers_edge" {
+  count         = var.enable_lambda_edge ? 1 : 0
   provider      = aws.us_east_1
   filename      = data.archive_file.security_headers_edge_zip.output_path
   function_name = "${var.project_name}-security-headers-edge"
-  role          = aws_iam_role.lambda_edge_execution_role.arn
+  role          = aws_iam_role.lambda_edge_execution_role[0].arn
   handler       = "index.handler"
   runtime       = "nodejs18.x"
   timeout       = 5
@@ -167,10 +181,11 @@ resource "aws_lambda_function" "security_headers_edge" {
 }
 
 resource "aws_lambda_function" "live_stream_auth_edge" {
+  count         = var.enable_lambda_edge ? 1 : 0
   provider      = aws.us_east_1
   filename      = data.archive_file.live_stream_auth_edge_zip.output_path
   function_name = "${var.project_name}-live-stream-auth-edge"
-  role          = aws_iam_role.lambda_edge_execution_role.arn
+  role          = aws_iam_role.lambda_edge_execution_role[0].arn
   handler       = "index.handler"
   runtime       = "nodejs18.x"
   timeout       = 5
@@ -183,8 +198,9 @@ resource "aws_lambda_function" "live_stream_auth_edge" {
   }
 }
 
-# IAM Role for Lambda@Edge
+# IAM Role for Lambda@Edge (conditional)
 resource "aws_iam_role" "lambda_edge_execution_role" {
+  count    = var.enable_lambda_edge ? 1 : 0
   provider = aws.us_east_1
   name     = "${var.project_name}-lambda-edge-execution-role"
 
@@ -206,9 +222,10 @@ resource "aws_iam_role" "lambda_edge_execution_role" {
 }
 
 resource "aws_iam_role_policy_attachment" "lambda_edge_basic_execution" {
+  count      = var.enable_lambda_edge ? 1 : 0
   provider   = aws.us_east_1
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-  role       = aws_iam_role.lambda_edge_execution_role.name
+  role       = aws_iam_role.lambda_edge_execution_role[0].name
 }
 
 # Cognito Lambda Functions
