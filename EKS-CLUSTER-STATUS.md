@@ -2,11 +2,12 @@
 
 ## 📊 Información del Cluster
 - **Nombre**: `confused-bluegrass-walrus`
-- **Estado**: 🟡 CREATING (En progreso)
+- **Estado**: 🟢 ACTIVE (Activo)
 - **Versión**: Kubernetes 1.34
-- **Modo**: EKS Automático
+- **Modo**: EKS Automático (Auto Mode)
 - **Región**: us-east-1
 - **ARN**: `arn:aws:eks:us-east-1:220017832616:cluster/confused-bluegrass-walrus`
+- **Endpoint API**: `https://1690974EB32AEBFA4FCDBF6E07A99F4A.gr7.us-east-1.eks.amazonaws.com`
 
 ## ✅ Verificación de Configuración
 
