@@ -313,10 +313,10 @@ check_infrastructure_status() {
     
     if [ "$resources_found" = false ]; then
         success "✅ Infrastructure is already destroyed. No resources found in AWS."
-        return 1
+        return 0
     else
         log "Infrastructure resources found and will be destroyed."
-        return 0
+        return 1
     fi
 }
 
@@ -426,7 +426,7 @@ main() {
     fi
     
     # Check if infrastructure already exists
-    if ! check_infrastructure_status; then
+    if check_infrastructure_status; then
         # Infrastructure already destroyed, exit gracefully
         exit 0
     fi
