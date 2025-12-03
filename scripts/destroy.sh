@@ -2,8 +2,8 @@
 set -e
 
 # CNN Chile Infrastructure Destruction Script
-# Version: 1.0
-# Description: Safely destroy CNN Chile platform infrastructure
+# Version: 1.1
+# Description: Safely destroy CNN Chile platform infrastructure with smart status checking
 
 # Color codes for output
 RED='\033[0;31m'
