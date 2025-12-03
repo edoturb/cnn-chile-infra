@@ -265,47 +265,62 @@ cleanup_local() {
     success "Local cleanup completed!"
 }
 
+# Check AWS resources (shared helper function)
+get_infrastructure_resources() {
+    # Check EKS clusters
+    local clusters
+    clusters=$(aws eks list-clusters --output text 2>/dev/null | grep "${PROJECT_NAME}" || true)
+    
+    # Check RDS instances
+    local db_instances
+    db_instances=$(aws rds describe-db-instances --query "DBInstances[*].DBInstanceIdentifier" --output text 2>/dev/null | grep "${PROJECT_NAME}" || true)
+    
+    # Check DynamoDB tables
+    local tables
+    tables=$(aws dynamodb list-tables --output text 2>/dev/null | grep "${PROJECT_NAME}" || true)
+    
+    # Check S3 buckets
+    local buckets
+    buckets=$(aws s3 ls 2>/dev/null | grep "${PROJECT_NAME}" | awk '{print $3}' || true)
+    
+    # Check CloudFront distributions
+    local distributions
+    distributions=$(aws cloudfront list-distributions --query "DistributionList.Items[?contains(Comment, '${PROJECT_NAME}')].Id" --output text 2>/dev/null || true)
+    
+    # Return results as a string with pipe separators
+    echo "${clusters}|${db_instances}|${tables}|${buckets}|${distributions}"
+}
+
 # Check if infrastructure already exists
 check_infrastructure_status() {
     log "Checking current infrastructure status..."
     
     local resources_found=false
+    local resource_data
+    resource_data=$(get_infrastructure_resources)
     
-    # Check EKS clusters
-    local clusters
-    clusters=$(aws eks list-clusters --output text 2>/dev/null | grep "${PROJECT_NAME}" || true)
+    IFS='|' read -r clusters db_instances tables buckets distributions <<< "$resource_data"
+    
     if [ -n "$clusters" ]; then
         log "Found EKS clusters: $clusters"
         resources_found=true
     fi
     
-    # Check RDS instances
-    local db_instances
-    db_instances=$(aws rds describe-db-instances --query "DBInstances[*].DBInstanceIdentifier" --output text 2>/dev/null | grep "${PROJECT_NAME}" || true)
     if [ -n "$db_instances" ]; then
         log "Found RDS instances: $db_instances"
         resources_found=true
     fi
     
-    # Check DynamoDB tables
-    local tables
-    tables=$(aws dynamodb list-tables --output text 2>/dev/null | grep "${PROJECT_NAME}" || true)
     if [ -n "$tables" ]; then
         log "Found DynamoDB tables: $tables"
         resources_found=true
     fi
     
-    # Check S3 buckets
-    local buckets
-    buckets=$(aws s3 ls 2>/dev/null | grep "$PROJECT_NAME" | awk '{print $3}' || true)
     if [ -n "$buckets" ]; then
         log "Found S3 buckets: $buckets"
         resources_found=true
     fi
     
-    # Check CloudFront distributions
-    local distributions
-    distributions=$(aws cloudfront list-distributions --query "DistributionList.Items[?contains(Comment, '${PROJECT_NAME}')].Id" --output text 2>/dev/null || true)
     if [ -n "$distributions" ]; then
         log "Found CloudFront distributions: $distributions"
         resources_found=true
@@ -324,37 +339,27 @@ check_infrastructure_status() {
 verify_destruction() {
     log "Verifying resource destruction..."
     
-    # Check EKS clusters
-    local clusters
-    clusters=$(aws eks list-clusters --output text 2>/dev/null | grep "${PROJECT_NAME}" || true)
+    local resource_data
+    resource_data=$(get_infrastructure_resources)
+    
+    IFS='|' read -r clusters db_instances tables buckets distributions <<< "$resource_data"
+    
     if [ -n "$clusters" ]; then
         warn "EKS clusters still exist: $clusters"
     fi
     
-    # Check RDS instances
-    local db_instances
-    db_instances=$(aws rds describe-db-instances --query "DBInstances[*].DBInstanceIdentifier" --output text 2>/dev/null | grep "${PROJECT_NAME}" || true)
     if [ -n "$db_instances" ]; then
         warn "RDS instances still exist: $db_instances"
     fi
     
-    # Check DynamoDB tables
-    local tables
-    tables=$(aws dynamodb list-tables --output text 2>/dev/null | grep "${PROJECT_NAME}" || true)
     if [ -n "$tables" ]; then
         warn "DynamoDB tables still exist: $tables"
     fi
     
-    # Check S3 buckets
-    local buckets
-    buckets=$(aws s3 ls 2>/dev/null | grep "${PROJECT_NAME}" | awk '{print $3}' || true)
     if [ -n "$buckets" ]; then
         warn "S3 buckets still exist: $buckets"
     fi
     
-    # Check CloudFront distributions
-    local distributions
-    distributions=$(aws cloudfront list-distributions --query "DistributionList.Items[*].Id" --output text 2>/dev/null | grep "${PROJECT_NAME}" || true)
     if [ -n "$distributions" ]; then
         warn "CloudFront distributions still exist: $distributions"
     fi
