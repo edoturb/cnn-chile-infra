@@ -273,7 +273,7 @@ check_infrastructure_status() {
     
     # Check EKS clusters
     local clusters
-    clusters=$(aws eks list-clusters --query "clusters[?contains(@, '${PROJECT_NAME}')]" --output text 2>/dev/null || true)
+    clusters=$(aws eks list-clusters --output text 2>/dev/null | grep "${PROJECT_NAME}" || true)
     if [ -n "$clusters" ]; then
         log "Found EKS clusters: $clusters"
         resources_found=true
@@ -281,7 +281,7 @@ check_infrastructure_status() {
     
     # Check RDS instances
     local db_instances
-    db_instances=$(aws rds describe-db-instances --query "DBInstances[?contains(DBInstanceIdentifier, '${PROJECT_NAME}')].DBInstanceIdentifier" --output text 2>/dev/null || true)
+    db_instances=$(aws rds describe-db-instances --query "DBInstances[*].DBInstanceIdentifier" --output text 2>/dev/null | grep "${PROJECT_NAME}" || true)
     if [ -n "$db_instances" ]; then
         log "Found RDS instances: $db_instances"
         resources_found=true
@@ -289,7 +289,7 @@ check_infrastructure_status() {
     
     # Check DynamoDB tables
     local tables
-    tables=$(aws dynamodb list-tables --query "TableNames[?contains(@, '${PROJECT_NAME}')]" --output text 2>/dev/null || true)
+    tables=$(aws dynamodb list-tables --output text 2>/dev/null | grep "${PROJECT_NAME}" || true)
     if [ -n "$tables" ]; then
         log "Found DynamoDB tables: $tables"
         resources_found=true
@@ -326,35 +326,35 @@ verify_destruction() {
     
     # Check EKS clusters
     local clusters
-    clusters=$(aws eks list-clusters --query "clusters[?contains(@, '${PROJECT_NAME}')]" --output text 2>/dev/null || true)
+    clusters=$(aws eks list-clusters --output text 2>/dev/null | grep "${PROJECT_NAME}" || true)
     if [ -n "$clusters" ]; then
         warn "EKS clusters still exist: $clusters"
     fi
     
     # Check RDS instances
     local db_instances
-    db_instances=$(aws rds describe-db-instances --query "DBInstances[?contains(DBInstanceIdentifier, '${PROJECT_NAME}')].DBInstanceIdentifier" --output text 2>/dev/null || true)
+    db_instances=$(aws rds describe-db-instances --query "DBInstances[*].DBInstanceIdentifier" --output text 2>/dev/null | grep "${PROJECT_NAME}" || true)
     if [ -n "$db_instances" ]; then
         warn "RDS instances still exist: $db_instances"
     fi
     
     # Check DynamoDB tables
     local tables
-    tables=$(aws dynamodb list-tables --query "TableNames[?contains(@, '${PROJECT_NAME}')]" --output text 2>/dev/null || true)
+    tables=$(aws dynamodb list-tables --output text 2>/dev/null | grep "${PROJECT_NAME}" || true)
     if [ -n "$tables" ]; then
         warn "DynamoDB tables still exist: $tables"
     fi
     
     # Check S3 buckets
     local buckets
-    buckets=$(aws s3 ls 2>/dev/null | grep "$PROJECT_NAME" | awk '{print $3}' || true)
+    buckets=$(aws s3 ls 2>/dev/null | grep "${PROJECT_NAME}" | awk '{print $3}' || true)
     if [ -n "$buckets" ]; then
         warn "S3 buckets still exist: $buckets"
     fi
     
     # Check CloudFront distributions
     local distributions
-    distributions=$(aws cloudfront list-distributions --query "DistributionList.Items[?contains(Comment, '${PROJECT_NAME}')].Id" --output text 2>/dev/null || true)
+    distributions=$(aws cloudfront list-distributions --query "DistributionList.Items[*].Id" --output text 2>/dev/null | grep "${PROJECT_NAME}" || true)
     if [ -n "$distributions" ]; then
         warn "CloudFront distributions still exist: $distributions"
     fi
