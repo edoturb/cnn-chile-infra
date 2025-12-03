@@ -1,5 +1,22 @@
 # CNN Chile - Infraestructura Digital Moderna
 
+## 🚀 Estado Actual
+
+**Cluster EKS Activo** en nuevo laboratorio AWS con permisos extendidos:
+- **Cluster**: `confused-bluegrass-walrus` 
+- **Estado**: 🟢 ACTIVE
+- **Versión**: Kubernetes 1.34
+- **Modo**: EKS Auto Mode
+
+## 📚 Documentación Completa
+
+👉 **[Ver Índice de Documentación](DOCUMENTATION-INDEX.md)** para navegar todas las guías disponibles.
+
+### Inicio Rápido:
+- 🚀 **[QUICK-START.md](QUICK-START.md)** - Empieza en 15 minutos
+- 📖 **[NEW-LAB-SETUP-SUMMARY.md](NEW-LAB-SETUP-SUMMARY.md)** - Estado actual y opciones
+- 🔧 **[COMPLETE-DEPLOYMENT-GUIDE.md](COMPLETE-DEPLOYMENT-GUIDE.md)** - Guía completa paso a paso
+
 ## Descripción del Proyecto
 
 Implementación de una plataforma tecnológica moderna para CNN Chile que integra sitio web, aplicación móvil, gestión de contenido, streaming en vivo, y sistema de suscripciones para audiencias nacionales e internacionales.
@@ -70,8 +87,36 @@ Implementación de una plataforma tecnológica moderna para CNN Chile que integr
 
 ## Despliegue
 
-Ver [Guía de Despliegue](docs/deployment-guide.md) para instrucciones detalladas.
+### Opción 1: Inicio Rápido (15 minutos)
+```bash
+# Configurar acceso al cluster existente
+./scripts/configure-existing-cluster.sh
+
+# Desplegar aplicaciones
+kubectl create namespace cnn-chile-dev
+kubectl apply -f kubernetes/deployments/
+kubectl apply -f kubernetes/services/
+```
+
+### Opción 2: Despliegue Completo
+Ver **[COMPLETE-DEPLOYMENT-GUIDE.md](COMPLETE-DEPLOYMENT-GUIDE.md)** para instrucciones detalladas paso a paso.
+
+### Verificar Recursos Existentes
+```bash
+# Script de verificación automática
+./scripts/verify-resources.sh
+```
+
+## Scripts Disponibles
+
+- `./scripts/configure-existing-cluster.sh` - Configurar cluster EKS existente
+- `./scripts/verify-resources.sh` - Verificar recursos en AWS
+- `./scripts/deploy-to-eks.sh` - Desplegar aplicaciones
+- `./scripts/monitor-eks.sh` - Monitorear cluster
+- `./scripts/health-check.sh` - Verificar salud del sistema
 
 ## Monitoreo y Mantenimiento
 
 La solución incluye monitoreo en tiempo real y trazabilidad distribuida para garantizar la observabilidad completa del sistema.
+
+Ver **[MONITORING.md](docs/)** para detalles sobre CloudWatch, X-Ray, y dashboards.
