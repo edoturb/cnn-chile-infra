@@ -2,8 +2,8 @@
 set -e
 
 # CNN Chile Infrastructure Destruction Script
-# Version: 1.0
-# Description: Safely destroy CNN Chile platform infrastructure
+# Version: 1.1
+# Description: Safely destroy CNN Chile platform infrastructure with smart status checking
 
 # Color codes for output
 RED='\033[0;31m'
@@ -265,49 +265,115 @@ cleanup_local() {
     success "Local cleanup completed!"
 }
 
+# Check AWS resources (shared helper function)
+get_infrastructure_resources() {
+    # Check EKS clusters - use query to get clean output
+    local clusters
+    clusters=$(aws eks list-clusters --query "clusters[*]" --output text 2>/dev/null | grep "${PROJECT_NAME}" || true)
+    
+    # Check RDS instances
+    local db_instances
+    db_instances=$(aws rds describe-db-instances --query "DBInstances[*].DBInstanceIdentifier" --output text 2>/dev/null | grep "${PROJECT_NAME}" || true)
+    
+    # Check DynamoDB tables - use query to get clean output
+    local tables
+    tables=$(aws dynamodb list-tables --query "TableNames[*]" --output text 2>/dev/null | grep "${PROJECT_NAME}" || true)
+    
+    # Check S3 buckets
+    local buckets
+    buckets=$(aws s3 ls 2>/dev/null | grep "${PROJECT_NAME}" | awk '{print $3}' || true)
+    
+    # Check CloudFront distributions - check both by Comment and by checking all distributions
+    local distributions
+    distributions=$(aws cloudfront list-distributions --query "DistributionList.Items[?contains(Comment, '${PROJECT_NAME}')].Id" --output text 2>/dev/null || true)
+    # Also check distributions by ID or other fields if comment-based check returns nothing
+    if [ -z "$distributions" ]; then
+        distributions=$(aws cloudfront list-distributions --query "DistributionList.Items[*].[Id,Comment]" --output text 2>/dev/null | grep "${PROJECT_NAME}" | awk '{print $1}' || true)
+    fi
+    
+    # Return results as a string with pipe separators
+    echo "${clusters}|${db_instances}|${tables}|${buckets}|${distributions}"
+}
+
+# Check if infrastructure already exists
+check_infrastructure_status() {
+    log "Checking current infrastructure status..."
+    
+    local resources_found=false
+    local resource_data
+    resource_data=$(get_infrastructure_resources)
+    
+    IFS='|' read -r clusters db_instances tables buckets distributions <<< "$resource_data"
+    
+    if [ -n "$clusters" ]; then
+        log "Found EKS clusters: $clusters"
+        resources_found=true
+    fi
+    
+    if [ -n "$db_instances" ]; then
+        log "Found RDS instances: $db_instances"
+        resources_found=true
+    fi
+    
+    if [ -n "$tables" ]; then
+        log "Found DynamoDB tables: $tables"
+        resources_found=true
+    fi
+    
+    if [ -n "$buckets" ]; then
+        log "Found S3 buckets: $buckets"
+        resources_found=true
+    fi
+    
+    if [ -n "$distributions" ]; then
+        log "Found CloudFront distributions: $distributions"
+        resources_found=true
+    fi
+    
+    if [ "$resources_found" = false ]; then
+        success "✅ Infrastructure is already destroyed. No resources found in AWS."
+        return 0
+    else
+        log "Infrastructure resources found and will be destroyed."
+        return 1
+    fi
+}
+
 # Verify destruction
 verify_destruction() {
     log "Verifying resource destruction..."
     
-    # Check EKS clusters
-    local clusters
-    clusters=$(aws eks list-clusters --query "clusters[?contains(@, '${PROJECT_NAME}')]" --output text)
+    local resource_data
+    resource_data=$(get_infrastructure_resources)
+    
+    IFS='|' read -r clusters db_instances tables buckets distributions <<< "$resource_data"
+    
     if [ -n "$clusters" ]; then
         warn "EKS clusters still exist: $clusters"
     fi
     
-    # Check RDS instances
-    local db_instances
-    db_instances=$(aws rds describe-db-instances --query "DBInstances[?contains(DBInstanceIdentifier, '${PROJECT_NAME}')].DBInstanceIdentifier" --output text)
     if [ -n "$db_instances" ]; then
         warn "RDS instances still exist: $db_instances"
     fi
     
-    # Check DynamoDB tables
-    local tables
-    tables=$(aws dynamodb list-tables --query "TableNames[?contains(@, '${PROJECT_NAME}')]" --output text)
     if [ -n "$tables" ]; then
         warn "DynamoDB tables still exist: $tables"
     fi
     
-    # Check S3 buckets
-    local buckets
-    buckets=$(aws s3 ls | grep "$PROJECT_NAME" | awk '{print $3}' || true)
     if [ -n "$buckets" ]; then
         warn "S3 buckets still exist: $buckets"
     fi
     
-    # Check CloudFront distributions
-    local distributions
-    distributions=$(aws cloudfront list-distributions --query "DistributionList.Items[?contains(Comment, '${PROJECT_NAME}')].Id" --output text 2>/dev/null || true)
     if [ -n "$distributions" ]; then
         warn "CloudFront distributions still exist: $distributions"
     fi
     
     if [ -z "$clusters" ] && [ -z "$db_instances" ] && [ -z "$tables" ] && [ -z "$buckets" ] && [ -z "$distributions" ]; then
         success "All resources successfully destroyed!"
+        return 0
     else
         warn "Some resources may still exist. Check AWS console for manual cleanup."
+        return 1
     fi
 }
 
@@ -321,6 +387,7 @@ main() {
     # Parse command line arguments
     local skip_backup=false
     local force=false
+    local check_only=false
     
     while [[ $# -gt 0 ]]; do
         case $1 in
@@ -332,11 +399,16 @@ main() {
                 force=true
                 shift
                 ;;
+            --check-status)
+                check_only=true
+                shift
+                ;;
             --help|-h)
                 echo "Usage: $0 [OPTIONS]"
                 echo "Options:"
                 echo "  --skip-backup    Skip data backup before destruction"
                 echo "  --force          Skip confirmation prompts"
+                echo "  --check-status   Only check if infrastructure exists (don't destroy)"
                 echo "  --help, -h       Show this help message"
                 exit 0
                 ;;
@@ -354,6 +426,18 @@ main() {
     if [ -z "$AWS_ACCOUNT_ID" ]; then
         error "Could not get AWS account ID. Please check your AWS credentials."
         exit 1
+    fi
+    
+    # If check-only mode, just check status and exit
+    if [ "$check_only" = true ]; then
+        check_infrastructure_status
+        exit $?
+    fi
+    
+    # Check if infrastructure already exists
+    if check_infrastructure_status; then
+        # Infrastructure already destroyed, exit gracefully
+        exit 0
     fi
     
     # Confirm destruction
@@ -374,10 +458,16 @@ main() {
     empty_s3_buckets
     destroy_infrastructure
     cleanup_local
-    verify_destruction
     
-    echo
-    success "Destruction completed!"
+    # Verify destruction and capture result
+    if verify_destruction; then
+        echo
+        success "Destruction completed successfully!"
+    else
+        echo
+        warn "Destruction completed with warnings - some resources may still exist"
+    fi
+    
     echo
     log "Remember to:"
     echo "1. Check AWS console for any remaining resources"
