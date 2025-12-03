@@ -267,25 +267,29 @@ cleanup_local() {
 
 # Check AWS resources (shared helper function)
 get_infrastructure_resources() {
-    # Check EKS clusters
+    # Check EKS clusters - use query to get clean output
     local clusters
-    clusters=$(aws eks list-clusters --output text 2>/dev/null | grep "${PROJECT_NAME}" || true)
+    clusters=$(aws eks list-clusters --query "clusters[*]" --output text 2>/dev/null | grep "${PROJECT_NAME}" || true)
     
     # Check RDS instances
     local db_instances
     db_instances=$(aws rds describe-db-instances --query "DBInstances[*].DBInstanceIdentifier" --output text 2>/dev/null | grep "${PROJECT_NAME}" || true)
     
-    # Check DynamoDB tables
+    # Check DynamoDB tables - use query to get clean output
     local tables
-    tables=$(aws dynamodb list-tables --output text 2>/dev/null | grep "${PROJECT_NAME}" || true)
+    tables=$(aws dynamodb list-tables --query "TableNames[*]" --output text 2>/dev/null | grep "${PROJECT_NAME}" || true)
     
     # Check S3 buckets
     local buckets
     buckets=$(aws s3 ls 2>/dev/null | grep "${PROJECT_NAME}" | awk '{print $3}' || true)
     
-    # Check CloudFront distributions
+    # Check CloudFront distributions - check both by Comment and by checking all distributions
     local distributions
     distributions=$(aws cloudfront list-distributions --query "DistributionList.Items[?contains(Comment, '${PROJECT_NAME}')].Id" --output text 2>/dev/null || true)
+    # Also check distributions by ID or other fields if comment-based check returns nothing
+    if [ -z "$distributions" ]; then
+        distributions=$(aws cloudfront list-distributions --query "DistributionList.Items[*].[Id,Comment]" --output text 2>/dev/null | grep "${PROJECT_NAME}" | awk '{print $1}' || true)
+    fi
     
     # Return results as a string with pipe separators
     echo "${clusters}|${db_instances}|${tables}|${buckets}|${distributions}"
