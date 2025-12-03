@@ -458,10 +458,16 @@ main() {
     empty_s3_buckets
     destroy_infrastructure
     cleanup_local
-    verify_destruction
     
-    echo
-    success "Destruction completed!"
+    # Verify destruction and capture result
+    if verify_destruction; then
+        echo
+        success "Destruction completed successfully!"
+    else
+        echo
+        warn "Destruction completed with warnings - some resources may still exist"
+    fi
+    
     echo
     log "Remember to:"
     echo "1. Check AWS console for any remaining resources"
