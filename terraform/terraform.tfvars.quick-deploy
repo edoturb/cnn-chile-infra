@@ -1,0 +1,37 @@
+# Quick Deploy Configuration
+# This configuration disables SSL, CloudFront, MediaStore, and Lambda@Edge
+# to allow fast deployment without certificate validation and complex IAM permissions
+
+# Basic Configuration
+aws_region   = "us-east-1"
+environment  = "dev"
+project_name = "cnn-chile-dev"
+
+# Feature Flags - All disabled for quick deployment
+enable_https           = false  # Disable HTTPS - no SSL certificate validation needed
+enable_cloudfront      = false  # Disable CloudFront - avoid certificate and IAM issues
+enable_mediastore      = false  # Disable MediaStore - avoid IAM permission issues
+enable_lambda_edge     = false  # Disable Lambda@Edge - avoid IAM and CloudFront dependencies
+enable_advanced_waf    = false  # Disable advanced WAF - use basic protection only
+enable_cognito_triggers = false  # Disable Cognito Lambda triggers - avoid IAM permission issues
+
+# Network Configuration
+vpc_cidr             = "10.0.0.0/16"
+availability_zones   = ["us-east-1a", "us-east-1b", "us-east-1c"]
+private_subnet_cidrs = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+public_subnet_cidrs  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
+database_subnet_cidrs = ["10.0.201.0/24", "10.0.202.0/24", "10.0.203.0/24"]
+
+# EKS Configuration (adjust for learner lab limits)
+eks_node_instance_types   = ["t3.medium"]
+eks_node_desired_capacity = 2
+eks_node_max_capacity     = 3
+eks_node_min_capacity     = 1
+
+# RDS Configuration
+rds_instance_class     = "db.t3.micro"
+rds_allocated_storage  = 20
+
+# Cost Optimization
+enable_nat_gateway  = true
+single_nat_gateway  = true  # Use single NAT gateway to reduce costs

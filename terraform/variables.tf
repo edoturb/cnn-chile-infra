@@ -150,3 +150,9 @@ variable "enable_advanced_waf" {
   type        = bool
   default     = false
 }
+
+variable "enable_cognito_triggers" {
+  description = "Enable Cognito Lambda triggers (requires Lambda functions and IAM permissions)"
+  type        = bool
+  default     = false
+}

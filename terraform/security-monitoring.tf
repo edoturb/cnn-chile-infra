@@ -296,15 +296,18 @@ resource "aws_cognito_user_pool" "main" {
     }
   }
 
-  # Lambda triggers for custom authentication flows
-  lambda_config {
-    pre_sign_up                    = aws_lambda_function.cognito_pre_signup.arn
-    post_confirmation              = aws_lambda_function.cognito_post_confirmation.arn
-    pre_authentication             = aws_lambda_function.cognito_pre_auth.arn
-    post_authentication            = aws_lambda_function.cognito_post_auth.arn
-    create_auth_challenge          = aws_lambda_function.cognito_create_auth_challenge.arn
-    define_auth_challenge          = aws_lambda_function.cognito_define_auth_challenge.arn
-    verify_auth_challenge_response = aws_lambda_function.cognito_verify_auth_challenge.arn
+  # Lambda triggers for custom authentication flows (conditional)
+  dynamic "lambda_config" {
+    for_each = var.enable_cognito_triggers ? [1] : []
+    content {
+      pre_sign_up                    = aws_lambda_function.cognito_pre_signup[0].arn
+      post_confirmation              = aws_lambda_function.cognito_post_confirmation[0].arn
+      pre_authentication             = aws_lambda_function.cognito_pre_auth[0].arn
+      post_authentication            = aws_lambda_function.cognito_post_auth[0].arn
+      create_auth_challenge          = aws_lambda_function.cognito_create_auth_challenge[0].arn
+      define_auth_challenge          = aws_lambda_function.cognito_define_auth_challenge[0].arn
+      verify_auth_challenge_response = aws_lambda_function.cognito_verify_auth_challenge[0].arn
+    }
   }
 
   tags = {

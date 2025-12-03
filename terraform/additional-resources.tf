@@ -228,11 +228,12 @@ resource "aws_iam_role_policy_attachment" "lambda_edge_basic_execution" {
   role       = aws_iam_role.lambda_edge_execution_role[0].name
 }
 
-# Cognito Lambda Functions
+# Cognito Lambda Functions (conditional)
 resource "aws_lambda_function" "cognito_pre_signup" {
+  count         = var.enable_cognito_triggers ? 1 : 0
   filename      = data.archive_file.cognito_pre_signup_zip.output_path
   function_name = "${var.project_name}-cognito-pre-signup"
-  role          = aws_iam_role.cognito_lambda_execution_role.arn
+  role          = aws_iam_role.cognito_lambda_execution_role[0].arn
   handler       = "index.handler"
   runtime       = "nodejs18.x"
   timeout       = 10
@@ -243,9 +244,10 @@ resource "aws_lambda_function" "cognito_pre_signup" {
 }
 
 resource "aws_lambda_function" "cognito_post_confirmation" {
+  count         = var.enable_cognito_triggers ? 1 : 0
   filename      = data.archive_file.cognito_post_confirmation_zip.output_path
   function_name = "${var.project_name}-cognito-post-confirmation"
-  role          = aws_iam_role.cognito_lambda_execution_role.arn
+  role          = aws_iam_role.cognito_lambda_execution_role[0].arn
   handler       = "index.handler"
   runtime       = "nodejs18.x"
   timeout       = 10
@@ -256,9 +258,10 @@ resource "aws_lambda_function" "cognito_post_confirmation" {
 }
 
 resource "aws_lambda_function" "cognito_pre_auth" {
+  count         = var.enable_cognito_triggers ? 1 : 0
   filename      = data.archive_file.cognito_pre_auth_zip.output_path
   function_name = "${var.project_name}-cognito-pre-auth"
-  role          = aws_iam_role.cognito_lambda_execution_role.arn
+  role          = aws_iam_role.cognito_lambda_execution_role[0].arn
   handler       = "index.handler"
   runtime       = "nodejs18.x"
   timeout       = 10
@@ -269,9 +272,10 @@ resource "aws_lambda_function" "cognito_pre_auth" {
 }
 
 resource "aws_lambda_function" "cognito_post_auth" {
+  count         = var.enable_cognito_triggers ? 1 : 0
   filename      = data.archive_file.cognito_post_auth_zip.output_path
   function_name = "${var.project_name}-cognito-post-auth"
-  role          = aws_iam_role.cognito_lambda_execution_role.arn
+  role          = aws_iam_role.cognito_lambda_execution_role[0].arn
   handler       = "index.handler"
   runtime       = "nodejs18.x"
   timeout       = 10
@@ -282,9 +286,10 @@ resource "aws_lambda_function" "cognito_post_auth" {
 }
 
 resource "aws_lambda_function" "cognito_create_auth_challenge" {
+  count         = var.enable_cognito_triggers ? 1 : 0
   filename      = data.archive_file.cognito_create_auth_challenge_zip.output_path
   function_name = "${var.project_name}-cognito-create-auth-challenge"
-  role          = aws_iam_role.cognito_lambda_execution_role.arn
+  role          = aws_iam_role.cognito_lambda_execution_role[0].arn
   handler       = "index.handler"
   runtime       = "nodejs18.x"
   timeout       = 10
@@ -295,9 +300,10 @@ resource "aws_lambda_function" "cognito_create_auth_challenge" {
 }
 
 resource "aws_lambda_function" "cognito_define_auth_challenge" {
+  count         = var.enable_cognito_triggers ? 1 : 0
   filename      = data.archive_file.cognito_define_auth_challenge_zip.output_path
   function_name = "${var.project_name}-cognito-define-auth-challenge"
-  role          = aws_iam_role.cognito_lambda_execution_role.arn
+  role          = aws_iam_role.cognito_lambda_execution_role[0].arn
   handler       = "index.handler"
   runtime       = "nodejs18.x"
   timeout       = 10
@@ -308,9 +314,10 @@ resource "aws_lambda_function" "cognito_define_auth_challenge" {
 }
 
 resource "aws_lambda_function" "cognito_verify_auth_challenge" {
+  count         = var.enable_cognito_triggers ? 1 : 0
   filename      = data.archive_file.cognito_verify_auth_challenge_zip.output_path
   function_name = "${var.project_name}-cognito-verify-auth-challenge"
-  role          = aws_iam_role.cognito_lambda_execution_role.arn
+  role          = aws_iam_role.cognito_lambda_execution_role[0].arn
   handler       = "index.handler"
   runtime       = "nodejs18.x"
   timeout       = 10
@@ -320,9 +327,10 @@ resource "aws_lambda_function" "cognito_verify_auth_challenge" {
   }
 }
 
-# IAM Role for Cognito Lambda functions
+# IAM Role for Cognito Lambda functions (conditional)
 resource "aws_iam_role" "cognito_lambda_execution_role" {
-  name = "${var.project_name}-cognito-lambda-execution-role"
+  count = var.enable_cognito_triggers ? 1 : 0
+  name  = "${var.project_name}-cognito-lambda-execution-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -339,8 +347,9 @@ resource "aws_iam_role" "cognito_lambda_execution_role" {
 }
 
 resource "aws_iam_role_policy_attachment" "cognito_lambda_basic_execution" {
+  count      = var.enable_cognito_triggers ? 1 : 0
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-  role       = aws_iam_role.cognito_lambda_execution_role.name
+  role       = aws_iam_role.cognito_lambda_execution_role[0].name
 }
 
 # Archive files for Lambda@Edge functions
