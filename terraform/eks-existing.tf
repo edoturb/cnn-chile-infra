@@ -1,10 +1,23 @@
 # Configuration for using existing EKS cluster
 # This file provides data sources to reference the existing EKS cluster
 # created manually in the AWS console
-
-# Uncomment these data sources if you want to use the existing cluster
-# instead of creating a new one. You'll also need to comment out the
-# resource blocks in eks.tf
+#
+# ⚠️ TEMPLATE FILE - NOT ACTIVE BY DEFAULT
+# This file is intentionally commented out to prevent conflicts with eks.tf
+# which creates a NEW cluster by default.
+#
+# TO USE THIS FILE:
+# 1. Uncomment all the code below (remove /* and */ markers)
+# 2. Comment out resource blocks in eks.tf that create:
+#    - aws_iam_role.eks_cluster
+#    - aws_iam_role.eks_node_group  
+#    - aws_eks_cluster.main
+#    - aws_eks_node_group.main
+#    - Related policy attachments
+# 3. Update main.tf providers to use data.aws_eks_cluster.existing
+# 4. Run: terraform plan -var-file="terraform.tfvars"
+#
+# For detailed instructions, see: EKS-INTEGRATION-GUIDE.md
 
 /*
 # Reference the existing EKS cluster

@@ -12,10 +12,6 @@ resource "aws_wafv2_web_acl" "cdn_waf" {
     name     = "RateLimitRule"
     priority = 1
 
-    override_action {
-      none {}
-    }
-
     statement {
       rate_based_statement {
         limit              = 2000

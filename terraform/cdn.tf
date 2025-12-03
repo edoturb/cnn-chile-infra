@@ -344,13 +344,18 @@ resource "aws_media_store_container_policy" "live_streaming_policy" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid    = "MediaStoreFullAccess"
+        Sid    = "MediaStoreWriteAccess"
         Effect = "Allow"
         Principal = {
           AWS = aws_iam_role.media_live_role.arn
         }
-        Action   = "mediastore:*"
-        Resource = "*"
+        Action = [
+          "mediastore:PutObject",
+          "mediastore:DeleteObject",
+          "mediastore:DescribeObject",
+          "mediastore:ListItems"
+        ]
+        Resource = "${aws_media_store_container.live_streaming.arn}/*"
       },
       {
         Sid       = "PublicReadOverHTTPS"
