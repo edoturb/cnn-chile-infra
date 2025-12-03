@@ -94,25 +94,25 @@ output "event_processor_lambda_arn" {
   value       = aws_lambda_function.event_processor.arn
 }
 
-# CloudFront Outputs
+# CloudFront Outputs (conditional)
 output "static_distribution_id" {
   description = "CloudFront static distribution ID"
-  value       = aws_cloudfront_distribution.static_distribution.id
+  value       = var.enable_cloudfront ? aws_cloudfront_distribution.static_distribution[0].id : null
 }
 
 output "static_distribution_domain_name" {
   description = "CloudFront static distribution domain name"
-  value       = aws_cloudfront_distribution.static_distribution.domain_name
+  value       = var.enable_cloudfront ? aws_cloudfront_distribution.static_distribution[0].domain_name : null
 }
 
 output "media_distribution_id" {
   description = "CloudFront media distribution ID"
-  value       = aws_cloudfront_distribution.media_distribution.id
+  value       = var.enable_cloudfront ? aws_cloudfront_distribution.media_distribution[0].id : null
 }
 
 output "media_distribution_domain_name" {
   description = "CloudFront media distribution domain name"
-  value       = aws_cloudfront_distribution.media_distribution.domain_name
+  value       = var.enable_cloudfront ? aws_cloudfront_distribution.media_distribution[0].domain_name : null
 }
 
 # S3 Outputs
@@ -161,7 +161,7 @@ output "cognito_identity_pool_id" {
 # Security Outputs
 output "cdn_waf_arn" {
   description = "CloudFront WAF ARN"
-  value       = aws_wafv2_web_acl.cdn_waf.arn
+  value       = var.enable_advanced_waf ? aws_wafv2_web_acl.cdn_waf[0].arn : null
 }
 
 output "api_waf_arn" {
@@ -169,15 +169,15 @@ output "api_waf_arn" {
   value       = aws_wafv2_web_acl.api_waf.arn
 }
 
-# MediaStore Outputs
+# MediaStore Outputs (conditional)
 output "mediastore_container_name" {
   description = "MediaStore container name"
-  value       = aws_media_store_container.live_streaming.name
+  value       = var.enable_mediastore ? aws_media_store_container.live_streaming[0].name : null
 }
 
 output "mediastore_endpoint" {
   description = "MediaStore container endpoint"
-  value       = aws_media_store_container.live_streaming.endpoint
+  value       = var.enable_mediastore ? aws_media_store_container.live_streaming[0].endpoint : null
 }
 
 # SNS Outputs

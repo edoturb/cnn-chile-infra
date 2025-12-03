@@ -1,5 +1,6 @@
-# AWS WAF v2 for CloudFront Protection
+# AWS WAF v2 for CloudFront Protection (conditional)
 resource "aws_wafv2_web_acl" "cdn_waf" {
+  count = var.enable_advanced_waf ? 1 : 0
   name  = "${var.project_name}-cdn-waf"
   scope = "CLOUDFRONT"
 
@@ -7,13 +8,13 @@ resource "aws_wafv2_web_acl" "cdn_waf" {
     allow {}
   }
 
-  # Rate limiting rule
+  # Rate limiting rule (custom rule - uses 'action' not 'override_action')
   rule {
     name     = "RateLimitRule"
     priority = 1
 
-    override_action {
-      none {}
+    action {
+      block {}
     }
 
     statement {
@@ -33,10 +34,6 @@ resource "aws_wafv2_web_acl" "cdn_waf" {
       cloudwatch_metrics_enabled = true
       metric_name                = "RateLimitRule"
       sampled_requests_enabled   = true
-    }
-
-    action {
-      block {}
     }
   }
 
@@ -299,15 +296,18 @@ resource "aws_cognito_user_pool" "main" {
     }
   }
 
-  # Lambda triggers for custom authentication flows
-  lambda_config {
-    pre_sign_up                    = aws_lambda_function.cognito_pre_signup.arn
-    post_confirmation              = aws_lambda_function.cognito_post_confirmation.arn
-    pre_authentication             = aws_lambda_function.cognito_pre_auth.arn
-    post_authentication            = aws_lambda_function.cognito_post_auth.arn
-    create_auth_challenge          = aws_lambda_function.cognito_create_auth_challenge.arn
-    define_auth_challenge          = aws_lambda_function.cognito_define_auth_challenge.arn
-    verify_auth_challenge_response = aws_lambda_function.cognito_verify_auth_challenge.arn
+  # Lambda triggers for custom authentication flows (conditional)
+  dynamic "lambda_config" {
+    for_each = var.enable_cognito_triggers ? [1] : []
+    content {
+      pre_sign_up                    = aws_lambda_function.cognito_pre_signup[0].arn
+      post_confirmation              = aws_lambda_function.cognito_post_confirmation[0].arn
+      pre_authentication             = aws_lambda_function.cognito_pre_auth[0].arn
+      post_authentication            = aws_lambda_function.cognito_post_auth[0].arn
+      create_auth_challenge          = aws_lambda_function.cognito_create_auth_challenge[0].arn
+      define_auth_challenge          = aws_lambda_function.cognito_define_auth_challenge[0].arn
+      verify_auth_challenge_response = aws_lambda_function.cognito_verify_auth_challenge[0].arn
+    }
   }
 
   tags = {

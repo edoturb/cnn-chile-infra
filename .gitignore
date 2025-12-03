@@ -47,3 +47,8 @@ test-results/*.tfstate
 # Build outputs
 dist/
 build/
+
+# Downloaded binaries and archives
+*.zip
+terraform
+!lambda/*.zip
