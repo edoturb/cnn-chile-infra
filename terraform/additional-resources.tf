@@ -58,16 +58,21 @@ resource "aws_lb_listener" "http" {
   port              = "80"
   protocol          = "HTTP"
 
-  default_action {
-    type = var.enable_https ? "redirect" : "forward"
+  # Conditional: forward to target group if HTTPS disabled, redirect if enabled
+  dynamic "default_action" {
+    for_each = var.enable_https ? [] : [1]
+    content {
+      type             = "forward"
+      target_group_arn = aws_lb_target_group.eks_api.arn
+    }
+  }
 
-    # Forward to target group if HTTPS is not enabled
-    target_group_arn = var.enable_https ? null : aws_lb_target_group.eks_api.arn
+  dynamic "default_action" {
+    for_each = var.enable_https ? [1] : []
+    content {
+      type = "redirect"
 
-    # Redirect to HTTPS if enabled
-    dynamic "redirect" {
-      for_each = var.enable_https ? [1] : []
-      content {
+      redirect {
         port        = "443"
         protocol    = "HTTPS"
         status_code = "HTTP_301"

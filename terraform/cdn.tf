@@ -378,6 +378,12 @@ resource "aws_media_store_container_policy" "live_streaming_policy" {
   count          = var.enable_mediastore ? 1 : 0
   container_name = aws_media_store_container.live_streaming[0].name
 
+  # Note: This policy allows public read access for live streaming content
+  # In production, consider restricting access with:
+  # - CloudFront Origin Access Identity
+  # - Signed URLs with time-limited access
+  # - IP-based restrictions
+  # - Referrer-based restrictions
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
