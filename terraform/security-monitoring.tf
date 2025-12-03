@@ -8,7 +8,7 @@ resource "aws_wafv2_web_acl" "cdn_waf" {
     allow {}
   }
 
-  # Rate limiting rule
+  # Rate limiting rule (custom rule - uses 'action' not 'override_action')
   rule {
     name     = "RateLimitRule"
     priority = 1

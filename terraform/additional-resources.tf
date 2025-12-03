@@ -58,6 +58,8 @@ resource "aws_lb_listener" "http" {
   port              = "80"
   protocol          = "HTTP"
 
+  # Note: Using two dynamic blocks for mutually exclusive actions (forward vs redirect)
+  # This approach is explicit and clear about behavior in each mode
   # Conditional: forward to target group if HTTPS disabled, redirect if enabled
   dynamic "default_action" {
     for_each = var.enable_https ? [] : [1]
